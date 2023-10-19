@@ -1,33 +1,77 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {useState} from 'react';
+import './App.css';
+import SearchBox from './components/search';
+
+const data = {
+  data: {
+   1: {id: 1, key: 'title', translations: { nl_BE: 'Mijn App', fr_BE: 'Mon App' }},
+   2: {id: 2, key: 'apply', translations: { nl_BE: 'toepassen', fr_BE: 'appliquer' }},
+  },
+  keys: [
+    'title',
+    'apply',
+  ],
+  codes: [
+    'nl_BE',
+    'fr_BE',
+  ],
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const [translations, setTranslations ] = useState(data.data);
+  const [dirty, setDirty] = useState({});
+
+  const updateTranslation = (id, code, dirtyField, value) => {
+    setTranslations(tr => {
+      tr[id].translations[code] = value;
+
+      return tr;
+    });
+
+    setDirty((d) => ({...d, [dirtyField]: true}));
+  }
+
+  const update = () => {
+    setDirty({});
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>Translation Tool</h1>
+
+      <SearchBox onChange={console.log}/>
+
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Key</th>
+            { data.codes.map((code, index) => (<th key={code+index}>{ code }</th>)) }
+          </tr>
+        </thead>
+        <tbody>
+          { Object.keys(translations).map((key) => {
+            const item = translations[key];
+            return <tr key={item.key+item.id}>
+                     <td>{item.id}</td>
+                     <td>{item.key}</td>
+                     { data.codes.map((code) => (
+                       <td key={item.key+item.id+code}>
+                         <input
+                           className={dirty[item.key+"_"+code] && 'modified'}
+                           name={item.key+"_"+code}
+                           defaultValue={item.translations[code]}
+                           onChange={(e) => updateTranslation(item.id, code, item.key+"_"+code, e.target.value)}
+                         />
+                       </td>
+                     ))}
+                   </tr>
+          })}
+        </tbody>
+      </table>
+
+      <button onClick={update}>Update</button>
     </>
   )
 }
